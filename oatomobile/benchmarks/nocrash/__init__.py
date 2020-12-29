@@ -12,9 +12,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Public API for `oatomobile.benchmarks`."""
-
-from oatomobile.benchmarks.carnovel.benchmark import carnovel
-from oatomobile.benchmarks.corl2017.benchmark import original
-from oatomobile.benchmarks.nocrash.benchmark import nocrash
-from oatomobile.benchmarks.nocrash.benchmark import anyweather

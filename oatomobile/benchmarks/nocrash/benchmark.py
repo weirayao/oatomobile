@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Implementation of CARNOVEL [1], the autonomous car novel-scene benchmark to
-evaluate the robustness of driving agents to a suite of tasks involving
-distribution shift. CARNOVEL is based on the CARLA simulator.
+"""Implementation of NoCrash [1], the autonomous car benchmark to
+evaluate the robustness of driving agents. NoCrash is based on the CARLA simulator.
 
 #### References
 
-[1]: Angelos Filos*, Panagiotis Tigas*, Rowan McAllister, Nicholas Rhinehart, Sergey Levine, Yarin Gal
-     Can Autonomous Vehicles Identify, Recover From, and Adapt to Distribution Shifts?
+[1]: Felipe Codevilla, Eder Santana, Antonio M. López, Adrien Gaidon. Exploring the Limitations of Behavior Cloning for Autonomous Driving.
+
 """
 
 import functools
@@ -53,11 +52,11 @@ for _config in _configs:
         _TASKS[_task_id] = json.load(_dict)
 
 
-class CORL2017(Benchmark):
-    """The CORL2017 benchmark."""
+class NoCrash(Benchmark):
+    """The NoCrash benchmark."""
 
     def load(self, task_id: Text, **kwargs) -> CARLANavEnv:
-        """Loads a CORL2017 task.
+        """Loads a NoCrash task.
 
         Args:
           task_id: The unique identifier of a task.
@@ -67,7 +66,7 @@ class CORL2017(Benchmark):
           A task from the benchmark with `task_id`.
         """
         # TODO(filangel): figure out the correct horizon.
-        env = super(CORL2017, self).load(task_id, max_episode_steps=1500, **kwargs)
+        env = super(NoCrash, self).load(task_id, max_episode_steps=1500, **kwargs)
 
         # Terminate on collision.
         env = TerminateOnCollisionWrapper(env)
@@ -88,5 +87,5 @@ class CORL2017(Benchmark):
         return [StepsMetric(), CollisionsMetric(), LaneInvasionsMetric()]
 
 
-corl2017 = CORL2017()
-original = CORL2017()
+nocrash = NoCrash()
+
