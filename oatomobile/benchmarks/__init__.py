@@ -17,4 +17,4 @@
 from oatomobile.benchmarks.carnovel.benchmark import carnovel
 from oatomobile.benchmarks.corl2017.benchmark import original
 from oatomobile.benchmarks.nocrash.benchmark import nocrash
-from oatomobile.benchmarks.nocrash.benchmark import anyweather
+from oatomobile.benchmarks.anyweather.benchmark import anyweather
