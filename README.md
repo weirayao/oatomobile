@@ -85,14 +85,19 @@ We have tested OATomobile on Python 3.5.
     easy_install $CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.6-py3.5-linux-x86_64.egg
     ```
 
-1.  To install the OATomobile core API:
+2.  To install the OATomobile core API:
 
     ```bash
     pip install --upgrade pip setuptools
-    pip install oatomobile
+    pip install -e git+https://github.com/weirayao/oatomobile.git#egg=oatomobile
     ```
 
-1.  To install dependencies for our [PyTorch]- or [TensorFlow]-based agents:
+3. To reinstall the library (e.g., after updates to the core API
+    ```
+    pip install --upgrade --no-deps --force-reinstall -e git+https://github.com/weirayao/oatomobile.git#egg=oatomobile
+    ```
+
+4.  To install dependencies for our [PyTorch]- or [TensorFlow]-based agents:
 
     ```bash
     pip install oatomobile[torch]
