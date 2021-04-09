@@ -62,6 +62,7 @@ setup(
         "tabulate==0.8.7",
         "scikit-image==0.15.0",
         "dm-tree==0.1.5",
+        "pyyaml==5.3.1"
     ],
     tests_require=[
         "pytest",

@@ -35,6 +35,8 @@ from absl import logging
 from oatomobile.core.dataset import Dataset
 from oatomobile.core.dataset import Episode
 
+import yaml
+import random
 
 class CARLADataset(Dataset):
   """The CARLA autopilot expert demonstrations dataset."""
@@ -52,6 +54,9 @@ class CARLADataset(Dataset):
       raise ValueError("Unrecognised CARLA dataset id {}".format(id))
     self.id = id
     super(CARLADataset, self).__init__()
+    dirname = os.path.dirname(__file__)
+    config_dir = os.path.join(dirname, 'dataset_configurations.yaml')
+    self.read_dataset_configurations(config_dir)
 
   def _get_uuid(self) -> str:
     """Returns the universal unique identifier of the dataset."""
@@ -103,6 +108,15 @@ class CARLADataset(Dataset):
     # Removes the zip file.
     logging.debug("Removes the compressed {}".format(zfname))
     os.remove(zfname)
+  
+  def read_dataset_configurations(self, config_dir: str) -> None:
+    """Reads dataset_configuration.yaml into a dictionary
+    
+    Args:
+      config_dir: The absolute path where the dataset configuration file is stored.
+    """
+    with open(config_dir) as file:
+      self.config = yaml.safe_load(file)
 
   @staticmethod
   def load_datum(
@@ -162,16 +176,46 @@ class CARLADataset(Dataset):
     sample["name"] = fname
 
     return sample
+  
+  def collect(self, 
+              num_episodes: int, 
+              output_dir: str,
+              max_steps_per_episode: int = 1000):
+    
+    # Storage area.
+    os.makedirs(output_dir, exist_ok=True)
+    town = self.config["TOWN"]
+    sensors = self.config["SENSORS"]
+    for i in tqdm.tqdm(range(num_episodes)):
+      number_of_vehicles = random.randint(self.config["NumberOfVehicles"][0], 
+                                          self.config["NumberOfVehicles"][1])
+      number_of_pedestrians = random.randint(self.config["NumberOfPedestrians"][0], 
+                                             self.config["NumberOfPedestrians"][1])
+
+      weather = random.choice(self.config["WEATHERS"])
+      origin, destination = random.choice(self.config["POSITIONS"])
+      CARLADataset.collect_one_episode(town=town, 
+                                       weather=weather, 
+                                       output_dir=output_dir,
+                                       num_vehicles=number_of_vehicles, 
+                                       num_pedestrians=number_of_pedestrians, 
+                                       num_steps=max_steps_per_episode, 
+                                       spawn_point=origin, 
+                                       destination=destination,
+                                       sensors=sensors, 
+                                       render=False)
 
   @staticmethod
-  def collect(
+  def collect_one_episode(
       town: str,
+      weather: str,
       output_dir: str,
       num_vehicles: int,
       num_pedestrians: int,
       num_steps: int = 1000,
       spawn_point: Optional[Union[int, "carla.Location"]] = None,  # pylint: disable=no-member
       destination: Optional[Union[int, "carla.Location"]] = None,  # pylint: disable=no-member
+
       sensors: Sequence[str] = (
           "acceleration",
           "velocity",
@@ -205,20 +249,18 @@ class CARLADataset(Dataset):
     from oatomobile.core.loop import EnvironmentLoop
     from oatomobile.core.rl import FiniteHorizonWrapper
     from oatomobile.core.rl import SaveToDiskWrapper
-    from oatomobile.envs.carla import CARLAEnv
+    from oatomobile.envs.carla import CARLANavEnv
     from oatomobile.envs.carla import TerminateOnCollisionWrapper
 
-    # Storage area.
-    os.makedirs(output_dir, exist_ok=True)
-
     # Initializes a CARLA environment.
-    env = CARLAEnv(
+    env = CARLANavEnv(
         town=town,
-        sensors=sensors,
-        spawn_point=spawn_point,
+        weather=weather,
+        origin=spawn_point,
         destination=destination,
+        sensors=sensors,
         num_vehicles=num_vehicles,
-        num_pedestrians=num_pedestrians,
+        num_pedestrians=num_pedestrians
     )
     # Terminates episode if a collision occurs.
     env = TerminateOnCollisionWrapper(env)

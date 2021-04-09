@@ -1,0 +1,33 @@
+#### General Configuration Parameters for Data Collection####
+TOWN: "Town01"
+
+WINDOW_WIDTH: 800
+WINDOW_HEIGHT: 600
+
+POSITIONS:  [[19, 66], [79, 14], [19, 57], [39, 53], [60, 26],
+             [53, 76], [42, 13], [31, 71], [59, 35], [47, 16],
+             [10, 61], [66, 3], [20, 79], [14, 56], [26, 69],
+             [79, 19], [2, 29], [16, 14], [5, 57], [77, 68],
+             [70, 73], [46, 67], [57, 50], [61, 49], [21, 12]
+             ]
+
+SENSORS: ["goal", 
+          "front_camera_rgb",
+          "lidar",
+          "bird_view_camera_cityscapes",
+          "bird_view_camera_rgb",
+          "control",
+          "location",
+          "rotation",
+          "velocity",
+          "collision",
+          "lane_invasion",
+          "is_at_traffic_light",
+          "traffic_light_state"
+          ]
+    
+
+FOV: 100
+WEATHERS: ["ClearNoon", "WetNoon", "MidRainyNoon", "ClearSunset"]
+NumberOfVehicles: [30, 30] #[20, 45]  # The range for the random numbers that are going to be generated
+NumberOfPedestrians: [40, 40] #[35, 80] #[
