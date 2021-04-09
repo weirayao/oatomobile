@@ -1599,6 +1599,7 @@ class CARLASimulator(simulator.Simulator):
   def __init__(
       self,
       town: str,
+      weather: str,
       sensors: Sequence[str] = defaults.CARLA_SENSORS,
       spawn_point: Optional[Union[int, carla.Location]] = None,  # pylint: disable=no-member
       destination: Optional[Union[int, carla.Location]] = None,  # pylint: disable=no-member
@@ -1628,6 +1629,7 @@ class CARLASimulator(simulator.Simulator):
     """
     # Configuration variables.
     self._town = town
+    self._weather = weather
     self._sensors = sensors
     self._fps = fps
     self._client_timeout = client_timeout
@@ -1711,6 +1713,7 @@ class CARLASimulator(simulator.Simulator):
     # CARLA setup.
     self._client, self._world, self._frame, self._server = cutil.setup(
         town=self._town,
+        weather=self._weather,
         fps=self._fps,
         client_timeout=self._client_timeout,
     )

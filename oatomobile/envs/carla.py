@@ -43,6 +43,7 @@ class CARLAEnv(Env):
       self,
       *,
       town: str,
+      weather: str,
       spawn_point: Optional[Union[int, carla.Location]] = None,  # pylint: disable=no-member
       destination: Optional[Union[int, carla.Location]] = None,  # pylint: disable=no-member
       fps: int = defaults.SIMULATOR_FPS,
@@ -85,6 +86,7 @@ class CARLAEnv(Env):
         sim_fn=CARLASimulator,
         # The keyword arguments passed in `CARLASimulator`.
         town=town,
+        weather=weather,
         sensors=_sensors,
         fps=fps,
         spawn_point=spawn_point,
@@ -125,6 +127,7 @@ class CARLANavEnv(CARLAEnv):
       self,
       *,
       town: str,
+      weather: str,
       origin: Union[int, carla.Location],  # pylint: disable=no-member
       destination: Union[int, carla.Location],  # pylint: disable=no-member
       fps: int = defaults.SIMULATOR_FPS,
@@ -153,6 +156,7 @@ class CARLANavEnv(CARLAEnv):
     """
     super(CARLANavEnv, self).__init__(
         town=town,
+        weather=weather,
         spawn_point=origin,
         destination=destination,
         fps=fps,

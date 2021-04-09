@@ -43,6 +43,7 @@ import carla
 
 def setup(
     town: str,
+    weather: str,
     fps: int = 20,
     server_timestop: float = 20.0,
     client_timeout: float = 20.0,
@@ -66,7 +67,11 @@ def setup(
     server: The `CARLA` server.
   """
   assert town in ("Town01", "Town02", "Town03", "Town04", "Town05")
-
+  # All preset weather parameters in carla.WeatherParameters
+  assert weather in ("ClearNoon", "CloudyNoon", "WetNoon", "WetCloudyNoon", "SoftRainNoon", 
+                     "MidRainyNoon", "HardRainNoon", "ClearSunset", "CloudySunset", "WetSunset", 
+                     "WetCloudySunset", "SoftRainSunset", "MidRainSunset", "HardRainSunset")
+  weather_params = getattr(carla.WeatherParameters, weather)
   # The attempts counter.
   attempts = 0
 
@@ -103,7 +108,7 @@ def setup(
       client.set_timeout(client_timeout)
       client.load_world(map_name=town)
       world = client.get_world()
-      world.set_weather(carla.WeatherParameters.ClearNoon)  # pylint: disable=no-member
+      world.set_weather(weather_params)  # pylint: disable=no-member
       frame = world.apply_settings(
           carla.WorldSettings(  # pylint: disable=no-member
               no_rendering_mode=False,
