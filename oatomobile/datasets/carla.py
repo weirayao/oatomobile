@@ -181,12 +181,18 @@ class CARLADataset(Dataset):
               num_episodes: int, 
               output_dir: str,
               max_steps_per_episode: int = 1000):
-    
+    """Collect multiple episodes of data using configuration file
+
+    Args: 
+      num_episodes: number of episodes of game
+      outout_dir: parent dirs to store data
+      max_steps_per_episode: Caps environment's duration.
+    """
     # Storage area.
     os.makedirs(output_dir, exist_ok=True)
     town = self.config["TOWN"]
     sensors = self.config["SENSORS"]
-    for i in tqdm.tqdm(range(num_episodes)):
+    for i in range(num_episodes):
       number_of_vehicles = random.randint(self.config["NumberOfVehicles"][0], 
                                           self.config["NumberOfVehicles"][1])
       number_of_pedestrians = random.randint(self.config["NumberOfPedestrians"][0], 
@@ -194,6 +200,7 @@ class CARLADataset(Dataset):
 
       weather = random.choice(self.config["WEATHERS"])
       origin, destination = random.choice(self.config["POSITIONS"])
+      print("Collecting Episode {}".format(1))
       CARLADataset.collect_one_episode(town=town, 
                                        weather=weather, 
                                        output_dir=output_dir,
