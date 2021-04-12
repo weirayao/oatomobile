@@ -28,6 +28,6 @@ SENSORS: ["goal",
     
 
 FOV: 100
-WEATHERS: ["ClearNoon", "WetNoon", "MidRainyNoon", "ClearSunset"]
+WEATHERS: ["ClearNoon", "WetNoon", "HardRainyNoon", "ClearSunset"]
 NumberOfVehicles: [30, 30] #[20, 45]  # The range for the random numbers that are going to be generated
 NumberOfPedestrians: [40, 40] #[35, 80] #[
