@@ -71,7 +71,14 @@ class CARLASensorTypes(simulator.SensorTypes):
   ACTORS_TRACKER = 21
   GOAL = 22
   PREDICTIONS = 23
-
+  FRONT_CAMERA_SEGMENTED = 24
+  RIGHT_CAMERA_SEGMENTED = 25
+  LEFT_CAMERA_SEGMENTED = 26
+  REAR_CAMERA_SEGMENTED = 27
+  FRONT_CAMERA_DEPTH = 28
+  RIGHT_CAMERA_DEPTH = 29
+  LEFT_CAMERA_DEPTH = 30
+  REAR_CAMERA_DEPTH = 31 
 
 class CameraSensor(simulator.Sensor, abc.ABC):
   """Abstract class for CARLA camera sensors."""
@@ -177,6 +184,56 @@ class CameraCityScapesSensor(CameraSensor):
       The spawned a camera sensor.
     """
     return cutil.spawn_camera(hero, config, camera_type="semantic_segmentation")
+
+  def get_observation(
+      self,
+      frame: int,
+      timeout: float,
+  ) -> np.ndarray:
+    """Finds the data point that matches the current `frame` id.
+
+    Args:
+      frame: The synchronous simulation time step ID.
+      timeout: The interval waited before stopping search
+        and raising a TimeoutError.
+
+    Returns:
+      A representation of the camera view.
+    """
+    try:
+      while True:
+        data = self.queue.get(timeout=timeout)
+        # Confirms synced frames.
+        if data.frame == frame:
+          break
+      # Processes the raw sensor data to a RGB array.
+      return cutil.carla_cityscapes_image_to_ndarray(data)
+    except queue.Empty:
+      logging.debug(
+          "The queue of {} sensor was empty, returns a random observation".
+          format(self.uuid))
+      return self.observation_space.sample()
+
+
+class CameraDepthSensor(CameraSensor):
+  """Abstract class for CARLA Depth camera sensors."""
+
+  @staticmethod
+  def _spawn_sensor(
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      config: Optional[Mapping[str, str]] = None,
+  ) -> carla.ServerSideSensor:  # pylint: disable=no-member
+    """Spawns a camera on `hero`.
+
+    Args:
+      hero: The agent to attach the camera on.
+      config: The attribute-value pairs for the configuration
+        of the sensor.
+
+    Returns:
+      The spawned a camera sensor.
+    """
+    return cutil.spawn_camera(hero, config, camera_type="depth")
 
   def get_observation(
       self,
@@ -341,6 +398,177 @@ class BirdViewCameraCityScapesSensor(CameraCityScapesSensor):
         hero=hero,
         config=defaults.BIRD_VIEW_CAMERA_CITYSCAPES_SENSOR_CONFIG,
     )
+
+
+## IMAGE SEGMENTATION SENSORS ##
+@registry.register_sensor(name="front_camera_segmented")
+class FrontCameraSegmentationSensor(CameraCityScapesSensor):
+  """Front camera image segmentation view sensor."""
+
+  def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+    """Returns the universal unique identifier of the sensor."""
+    return "front_camera_segmented"
+
+  def _get_sensor_type(self, *args: Any, **kwargs: Any) -> CARLASensorTypes:
+    """Returns the the type of the sensor."""
+    return CARLASensorTypes.FRONT_CAMERA_SEGMENTED
+
+  @classmethod
+  def default(
+      cls,
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      *args,
+      **kwargs) -> "FrontCameraSegmentationSensor":
+    """Returns the default sensor."""
+    return cls(hero=hero, config=defaults.FRONT_CAMERA_SEGMENTED_SENSOR_CONFIG)
+
+@registry.register_sensor(name="left_camera_segmented")
+class LeftCameraSegmentationSensor(CameraCityScapesSensor):
+  """Front camera image segmentation view sensor."""
+
+  def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+    """Returns the universal unique identifier of the sensor."""
+    return "left_camera_segmented"
+
+  def _get_sensor_type(self, *args: Any, **kwargs: Any) -> CARLASensorTypes:
+    """Returns the the type of the sensor."""
+    return CARLASensorTypes.LEFT_CAMERA_SEGMENTED
+
+  @classmethod
+  def default(
+      cls,
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      *args,
+      **kwargs) -> "LeftCameraSegmentationSensor":
+    """Returns the default sensor."""
+    return cls(hero=hero, config=defaults.LEFT_CAMERA_SEGMENTED_SENSOR_CONFIG)
+
+@registry.register_sensor(name="right_camera_segmented")
+class RightCameraSegmentationSensor(CameraCityScapesSensor):
+  """Front camera image segmentation view sensor."""
+
+  def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+    """Returns the universal unique identifier of the sensor."""
+    return "right_camera_segmented"
+
+  def _get_sensor_type(self, *args: Any, **kwargs: Any) -> CARLASensorTypes:
+    """Returns the the type of the sensor."""
+    return CARLASensorTypes.RIGHT_CAMERA_SEGMENTED
+
+  @classmethod
+  def default(
+      cls,
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      *args,
+      **kwargs) -> "RightCameraSegmentationSensor":
+    """Returns the default sensor."""
+    return cls(hero=hero, config=defaults.RIGHT_CAMERA_SEGMENTED_SENSOR_CONFIG)
+
+@registry.register_sensor(name="rear_camera_segmented")
+class RearCameraSegmentationSensor(CameraCityScapesSensor):
+  """Front camera image segmentation view sensor."""
+
+  def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+    """Returns the universal unique identifier of the sensor."""
+    return "rear_camera_segmented"
+
+  def _get_sensor_type(self, *args: Any, **kwargs: Any) -> CARLASensorTypes:
+    """Returns the the type of the sensor."""
+    return CARLASensorTypes.REAR_CAMERA_SEGMENTED
+
+  @classmethod
+  def default(
+      cls,
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      *args,
+      **kwargs) -> "RearCameraSegmentationSensor":
+    """Returns the default sensor."""
+    return cls(hero=hero, config=defaults.REAR_CAMERA_SEGMENTED_SENSOR_CONFIG)
+
+## DEPTH SENSORS ##
+@registry.register_sensor(name="front_camera_depth")
+class FrontCameraDepthSensor(CameraDepthSensor):
+  """Front camera depth image view sensor."""
+
+  def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+    """Returns the universal unique identifier of the sensor."""
+    return "front_camera_depth"
+
+  def _get_sensor_type(self, *args: Any, **kwargs: Any) -> CARLASensorTypes:
+    """Returns the the type of the sensor."""
+    return CARLASensorTypes.FRONT_CAMERA_DEPTH
+
+  @classmethod
+  def default(
+      cls,
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      *args,
+      **kwargs) -> "FrontCameraDepthSensor":
+    """Returns the default sensor."""
+    return cls(hero=hero, config=defaults.FRONT_CAMERA_DEPTH_SENSOR_CONFIG)
+
+@registry.register_sensor(name="left_camera_depth")
+class LeftCameraDepthSensor(CameraDepthSensor):
+  """Left camera depth image view sensor."""
+
+  def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+    """Returns the universal unique identifier of the sensor."""
+    return "left_camera_depth"
+
+  def _get_sensor_type(self, *args: Any, **kwargs: Any) -> CARLASensorTypes:
+    """Returns the the type of the sensor."""
+    return CARLASensorTypes.LEFT_CAMERA_DEPTH
+
+  @classmethod
+  def default(
+      cls,
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      *args,
+      **kwargs) -> "LeftCameraDepthSensor":
+    """Returns the default sensor."""
+    return cls(hero=hero, config=defaults.LEFT_CAMERA_DEPTH_SENSOR_CONFIG)
+
+@registry.register_sensor(name="right_camera_depth")
+class RightCameraDepthSensor(CameraDepthSensor):
+  """Right camera depth image view sensor."""
+
+  def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+    """Returns the universal unique identifier of the sensor."""
+    return "right_camera_depth"
+
+  def _get_sensor_type(self, *args: Any, **kwargs: Any) -> CARLASensorTypes:
+    """Returns the the type of the sensor."""
+    return CARLASensorTypes.RIGHT_CAMERA_DEPTH
+
+  @classmethod
+  def default(
+      cls,
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      *args,
+      **kwargs) -> "RightCameraDepthSensor":
+    """Returns the default sensor."""
+    return cls(hero=hero, config=defaults.RIGHT_CAMERA_DEPTH_SENSOR_CONFIG)
+
+@registry.register_sensor(name="rear_camera_depth")
+class RearCameraDepthSensor(CameraDepthSensor):
+  """Rear depth camera view sensor."""
+
+  def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+    """Returns the universal unique identifier of the sensor."""
+    return "rear_camera_depth"
+
+  def _get_sensor_type(self, *args: Any, **kwargs: Any) -> CARLASensorTypes:
+    """Returns the the type of the sensor."""
+    return CARLASensorTypes.REAR_CAMERA_DEPTH
+
+  @classmethod
+  def default(
+      cls,
+      hero: carla.ActorBlueprint,  # pylint: disable=no-member
+      *args,
+      **kwargs) -> "RearCameraDepthSensor":
+    """Returns the default sensor."""
+    return cls(hero=hero, config=defaults.REAR_CAMERA_DEPTH_SENSOR_CONFIG)
 
 
 @registry.register_sensor(name="lidar")

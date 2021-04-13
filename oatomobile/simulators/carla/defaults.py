@@ -20,30 +20,75 @@ import os
 # CARLA simulator frames per second (FPS).
 SIMULATOR_FPS = 20
 
+# CAMERA WINDOW
+WIDTH = "200"
+HEIGHT = "150"
+FOV = "90"
+
 # The front RGB camera configuration.
 FRONT_CAMERA_RGB_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "320",
-        "image_size_y": "180",
-        "fov": "90",
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
     },
     "actor": {
         "location": {
-            "x": 0.0,
+            "x": 2.0,
             "y": 0.0,
-            "z": 2.3,
+            "z": 1.4,
         },
         "rotation": {
-            "pitch": 0,
+            "pitch": -15.0,
         }
     },
 }
+
+# The front segmented camera configuration.
+FRONT_CAMERA_SEGMENTED_SENSOR_CONFIG = {
+    "attributes": {
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
+    },
+    "actor": {
+        "location": {
+            "x": 2.0,
+            "y": 0.0,
+            "z": 1.4,
+        },
+        "rotation": {
+            "pitch": -15.0,
+        }
+    },
+}
+
+# The front depth camera configuration.
+FRONT_CAMERA_DEPTH_SENSOR_CONFIG = {
+    "attributes": {
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
+    },
+    "actor": {
+        "location": {
+            "x": 2.0,
+            "y": 0.0,
+            "z": 1.4,
+        },
+        "rotation": {
+            "pitch": -15.0,
+        }
+    },
+}
+
+
 # The rear RGB camera configuration.
 REAR_CAMERA_RGB_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "320",
-        "image_size_y": "180",
-        "fov": "90",
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
     },
     "actor": {
         "location": {
@@ -57,12 +102,13 @@ REAR_CAMERA_RGB_SENSOR_CONFIG = {
         }
     },
 }
-# The left RGB camera configuration.
-LEFT_CAMERA_RGB_SENSOR_CONFIG = {
+
+# The rear segmented camera configuration.
+REAR_CAMERA_SEGMENTED_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "320",
-        "image_size_y": "180",
-        "fov": "90",
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
     },
     "actor": {
         "location": {
@@ -72,16 +118,17 @@ LEFT_CAMERA_RGB_SENSOR_CONFIG = {
         },
         "rotation": {
             "pitch": 0,
-            "yaw": 270,
+            "yaw": 180,
         }
     },
 }
-# The right RGB camera configuration.
-RIGHT_CAMERA_RGB_SENSOR_CONFIG = {
+
+# The rear depth camera configuration.
+REAR_CAMERA_DEPTH_SENSOR_CONFIG = {
     "attributes": {
-        "image_size_x": "320",
-        "image_size_y": "180",
-        "fov": "90",
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
     },
     "actor": {
         "location": {
@@ -91,7 +138,127 @@ RIGHT_CAMERA_RGB_SENSOR_CONFIG = {
         },
         "rotation": {
             "pitch": 0,
-            "yaw": 90,
+            "yaw": 180,
+        }
+    },
+}
+
+# The left RGB camera configuration.
+LEFT_CAMERA_RGB_SENSOR_CONFIG = {
+    "attributes": {
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
+    },
+    "actor": {
+        "location": {
+            "x": 2.0,
+            "y": 0.0,
+            "z": 1.4,
+        },
+        "rotation": {
+            "pitch": -15.0,
+            "yaw": -30.0,
+        }
+    },
+}
+
+# The left segmented camera configuration.
+LEFT_CAMERA_SEGMENTED_SENSOR_CONFIG = {
+    "attributes": {
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
+    },
+    "actor": {
+        "location": {
+            "x": 2.0,
+            "y": 0.0,
+            "z": 1.4,
+        },
+        "rotation": {
+            "pitch": -15.0,
+            "yaw": -30.0,
+        }
+    },
+}
+
+# The left depth camera configuration.
+LEFT_CAMERA_DEPTH_SENSOR_CONFIG = {
+    "attributes": {
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
+    },
+    "actor": {
+        "location": {
+            "x": 2.0,
+            "y": 0.0,
+            "z": 1.4,
+        },
+        "rotation": {
+            "pitch": -15.0,
+            "yaw": -30.0,
+        }
+    },
+}
+
+# The right RGB camera configuration.
+RIGHT_CAMERA_RGB_SENSOR_CONFIG = {
+    "attributes": {
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
+    },
+    "actor": {
+        "location": {
+            "x": 2.0,
+            "y": 0.0,
+            "z": 1.4,
+        },
+        "rotation": {
+            "pitch": -15.0,
+            "yaw": 30.0,
+        }
+    },
+}
+
+# The right segmented camera configuration.
+RIGHT_CAMERA_SEGMENTED_SENSOR_CONFIG = {
+    "attributes": {
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
+    },
+    "actor": {
+        "location": {
+            "x": 2.0,
+            "y": 0.0,
+            "z": 1.4,
+        },
+        "rotation": {
+            "pitch": -15.0,
+            "yaw": 30.0,
+        }
+    },
+}
+
+# The right depth camera configuration.
+RIGHT_CAMERA_DEPTH_SENSOR_CONFIG = {
+    "attributes": {
+        "image_size_x": WIDTH,
+        "image_size_y": HEIGHT,
+        "fov": FOV,
+    },
+    "actor": {
+        "location": {
+            "x": 2.0,
+            "y": 0.0,
+            "z": 1.4,
+        },
+        "rotation": {
+            "pitch": -15.0,
+            "yaw": 30.0,
         }
     },
 }
@@ -148,11 +315,21 @@ GAME_STATE_CONFIG = {
     "scale": 1.0,
     "pixels_per_meter": 5,
 }
-
+#     "rear_camera_rgb",
+#     "rear_camera_segmented",
+#     "rear_camera_depth",
 # Default sensors.
 CARLA_SENSORS = (
     "goal",
     "front_camera_rgb",
+    "front_camera_segmented",
+    "front_camera_depth",    
+    "left_camera_rgb",
+    "left_camera_segmented",
+    "left_camera_depth",
+    "right_camera_rgb",
+    "right_camera_segmented",
+    "right_camera_depth",
     "lidar",
     "bird_view_camera_cityscapes",
     "bird_view_camera_rgb",

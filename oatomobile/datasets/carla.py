@@ -34,9 +34,11 @@ from absl import logging
 
 from oatomobile.core.dataset import Dataset
 from oatomobile.core.dataset import Episode
+from oatomobile.simulators.carla import defaults
 
 import yaml
 import random
+import time
 
 class CARLADataset(Dataset):
   """The CARLA autopilot expert demonstrations dataset."""
@@ -191,8 +193,9 @@ class CARLADataset(Dataset):
     # Storage area.
     os.makedirs(output_dir, exist_ok=True)
     town = self.config["TOWN"]
-    sensors = self.config["SENSORS"]
+    sensors = defaults.CARLA_SENSORS
     for i in range(num_episodes):
+      print("Collecting Episode: %d..."%i)
       number_of_vehicles = random.randint(self.config["NumberOfVehicles"][0], 
                                           self.config["NumberOfVehicles"][1])
       number_of_pedestrians = random.randint(self.config["NumberOfPedestrians"][0], 
@@ -200,7 +203,9 @@ class CARLADataset(Dataset):
 
       weather = random.choice(self.config["WEATHERS"])
       origin, destination = random.choice(self.config["POSITIONS"])
-      print("Collecting Episode {}".format(1))
+      print("Number of Vehicles: %d\nNumber of Pedestrians: %d"%(number_of_vehicles, number_of_pedestrians))
+      print("Weather: %s"%weather)
+      print("Origin index: %d\nDestination index: %d"%(origin,destination))
       CARLADataset.collect_one_episode(town=town, 
                                        weather=weather, 
                                        output_dir=output_dir,
@@ -211,6 +216,9 @@ class CARLADataset(Dataset):
                                        destination=destination,
                                        sensors=sensors, 
                                        render=False)
+      # Wait 30s so the game can be closed completely
+      print("Done! Sleeping...")                                 
+      time.sleep(15)
 
   @staticmethod
   def collect_one_episode(

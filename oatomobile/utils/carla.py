@@ -350,12 +350,12 @@ def spawn_camera(
     hero: The agent to attach the camera on.
     config: The attribute-value pairs for the configuration
       of the sensor.
-    camera_type: Camera type, one of ("rgb", "semantic_segmentation").
+    camera_type: Camera type, one of ("rgb", "semantic_segmentation", "depth").
 
   Returns:
     The spawned  camera sensor.
   """
-  assert camera_type in ("rgb", "semantic_segmentation")
+  assert camera_type in ("rgb", "semantic_segmentation", "depth")
 
   # Get hero's world.
   world = hero.get_world()
