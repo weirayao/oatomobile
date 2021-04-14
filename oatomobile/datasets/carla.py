@@ -355,13 +355,19 @@ class CARLADataset(Dataset):
 
           # Build future trajectory.
           player_future = list()
+          player_future_control = list()
           for j in range(1, future_length + 1):
             future_location = episode.read_sample(
                 sample_token=sequence[i + j],
-                attr="location",
-            )
+                attr="location")
+            future_control = episode.read_sample(
+                sample_token=sequence[i + j],
+                attr="control")
             player_future.append(future_location)
+            player_future_control.append(future_control)
           player_future = np.asarray(player_future)
+          # No need to transform control actions to local frame
+          player_future_control = np.asarray(player_future_control)
           assert len(player_future.shape) == 2
           player_future = cutil.world2local(
               current_location=current_location,
@@ -375,6 +381,7 @@ class CARLADataset(Dataset):
               **observation,
               player_future=player_future,
               player_past=player_past,
+              player_future_control = player_future_control
           )
 
         except Exception as e:
