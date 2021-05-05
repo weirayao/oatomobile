@@ -58,13 +58,13 @@ def map_waypoints_to_grid(waypoints, grid_res = 0.5, grid_size = (40,40)):
     ynew = f(x)
     # Horizontal filling
     x_idx = np.round(x / grid_res + 0.5*grid_size[0]).astype("int") 
-    y_idx = (grid_size[1] - np.round(ynew / grid_res)).astype("int")
+    y_idx = (np.round(ynew / grid_res)).astype("int")
     y_idx = np.clip(y_idx, a_min=0, a_max=grid_size[1]-1) 
     data = np.ones_like(x_idx)
     grid_hfill = csr_matrix((data, (y_idx, x_idx)), shape = grid_size)
     # Vertical filling
     x_idx = np.round(xnew / grid_res + 0.5*grid_size[0]).astype("int") 
-    y_idx = (grid_size[1] - np.round(y / grid_res)).astype("int") 
+    y_idx = (np.round(y / grid_res)).astype("int") 
     y_idx = np.clip(y_idx, a_min=0, a_max=grid_size[1]-1) 
     data = np.ones_like(x_idx)
     grid_vfill = csr_matrix((data, (y_idx, x_idx)), shape = grid_size) 
