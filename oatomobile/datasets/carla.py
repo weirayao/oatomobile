@@ -25,9 +25,13 @@ from typing import Mapping
 from typing import Optional
 from typing import Sequence
 from typing import Union
-
+from typing import Tuple
+import glob
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy
+from scipy import interpolate
+from scipy.sparse import csr_matrix
 import tqdm
 import wget
 from absl import logging
@@ -39,6 +43,35 @@ from oatomobile.simulators.carla import defaults
 import yaml
 import random
 import time
+
+
+def map_waypoints_to_grid(waypoints, grid_res = 0.5, grid_size = (40,40)):
+    # x: forward y: left side z: upward
+    waypoints = waypoints[:,[1,0]]
+    f = interpolate.interp1d(waypoints[:,0], waypoints[:,1], "linear")
+    f_inv = interpolate.interp1d(waypoints[:,1], waypoints[:,0], "linear")
+    min_x, max_x = np.min(waypoints[:,0]), np.max(waypoints[:,0])
+    min_y, max_y = np.min(waypoints[:,1]), np.max(waypoints[:,1])
+    x = np.arange(min_x, max_x, grid_res)
+    y = np.arange(min_y, max_y, grid_res)
+    xnew = f_inv(y)
+    ynew = f(x)
+    # Horizontal filling
+    x_idx = np.round(x / grid_res + 0.5*grid_size[0]).astype("int") 
+    y_idx = (grid_size[1] - np.round(ynew / grid_res)).astype("int")
+    y_idx = np.clip(y_idx, a_min=0, a_max=grid_size[1]-1) 
+    data = np.ones_like(x_idx)
+    grid_hfill = csr_matrix((data, (y_idx, x_idx)), shape = grid_size)
+    # Vertical filling
+    x_idx = np.round(xnew / grid_res + 0.5*grid_size[0]).astype("int") 
+    y_idx = (grid_size[1] - np.round(y / grid_res)).astype("int") 
+    y_idx = np.clip(y_idx, a_min=0, a_max=grid_size[1]-1) 
+    data = np.ones_like(x_idx)
+    grid_vfill = csr_matrix((data, (y_idx, x_idx)), shape = grid_size) 
+    # Combine
+    grid = (grid_hfill+grid_vfill).toarray()
+    grid = (grid > 0).astype("int")
+    return grid  
 
 class CARLADataset(Dataset):
   """The CARLA autopilot expert demonstrations dataset."""
@@ -298,6 +331,8 @@ class CARLADataset(Dataset):
       future_length: int = 80,
       past_length: int = 20,
       num_frame_skips: int = 5,
+      grid_res: float = 0.5,
+      grid_size: Tuple = (79,79)
   ) -> None:
     """Converts a raw dataset to demonstrations for imitation learning.
 
@@ -314,7 +349,7 @@ class CARLADataset(Dataset):
     os.makedirs(output_dir, exist_ok=True)
 
     # Iterate over all episodes.
-    for episode_token in tqdm.tqdm(os.listdir(dataset_dir)):
+    for episode_token in tqdm.tqdm(filter(lambda x: len(x)==32, os.listdir(dataset_dir))):
       logging.debug("Processes {} episode".format(episode_token))
       # Initializes episode handler.
       episode = Episode(parent_dir=dataset_dir, token=episode_token)
@@ -322,6 +357,7 @@ class CARLADataset(Dataset):
       try:
         sequence = episode.fetch()
       except FileNotFoundError:
+        print("File not found!")
         continue
 
       # Always keep `past_length+future_length+1` files open.
@@ -334,6 +370,10 @@ class CARLADataset(Dataset):
         try:
           # Player context/observation.
           observation = episode.read_sample(sample_token=sequence[i])
+          # Project waypoints to a topdown one-hot encoded image
+          wpts_ohe = map_waypoints_to_grid(observation["goal"], 
+                                           grid_res = grid_res, 
+                                           grid_size = grid_size)
           current_location = observation["location"]
           current_rotation = observation["rotation"]
 
@@ -374,14 +414,31 @@ class CARLADataset(Dataset):
               current_rotation=current_rotation,
               world_locations=player_future,
           )
-
+          # Appends `mode` attribute where `{0: FORWARD, 1: STOP, 2: LEFT, 3: RIGHT}`.
+          plan = player_future
+          x_T, y_T = plan[-1, :2]
+          # Norm of the vector (x_T, y_T).
+          norm = np.linalg.norm([x_T, y_T])
+          # Angle of vector (0, 0) -> (x_T, y_T).
+          theta = np.degrees(np.arccos(x_T / (norm + 1e-3)))
+          if norm < 3:  # STOP
+            mode = 1
+          elif theta > 15:  # LEFT
+            mode = 2
+          elif theta <= -15:  # RIGHT
+            mode = 3
+          else:  # FORWARD
+            mode = 0
+          mode = np.atleast_1d(mode)
           # Store to ouput directory.
           np.savez_compressed(
               os.path.join(output_dir, "{}.npz".format(sequence[i])),
               **observation,
               player_future=player_future,
               player_past=player_past,
-              player_future_control = player_future_control
+              player_future_control = player_future_control,
+              waypoints_ohe = wpts_ohe,
+              mode = mode
           )
 
         except Exception as e:

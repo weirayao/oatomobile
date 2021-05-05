@@ -21,8 +21,8 @@ import os
 SIMULATOR_FPS = 20
 
 # CAMERA WINDOW
-WIDTH = "200"
-HEIGHT = "150"
+WIDTH = "800"
+HEIGHT = "800"
 FOV = "90"
 
 # The front RGB camera configuration.
@@ -39,7 +39,7 @@ FRONT_CAMERA_RGB_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
         }
     },
 }
@@ -58,7 +58,7 @@ FRONT_CAMERA_SEGMENTED_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
         }
     },
 }
@@ -77,7 +77,7 @@ FRONT_CAMERA_DEPTH_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
         }
     },
 }
@@ -157,7 +157,7 @@ LEFT_CAMERA_RGB_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
             "yaw": -30.0,
         }
     },
@@ -177,7 +177,7 @@ LEFT_CAMERA_SEGMENTED_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
             "yaw": -30.0,
         }
     },
@@ -197,7 +197,7 @@ LEFT_CAMERA_DEPTH_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
             "yaw": -30.0,
         }
     },
@@ -217,7 +217,7 @@ RIGHT_CAMERA_RGB_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
             "yaw": 30.0,
         }
     },
@@ -237,7 +237,7 @@ RIGHT_CAMERA_SEGMENTED_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
             "yaw": 30.0,
         }
     },
@@ -257,7 +257,7 @@ RIGHT_CAMERA_DEPTH_SENSOR_CONFIG = {
             "z": 1.4,
         },
         "rotation": {
-            "pitch": -15.0,
+            "pitch": 0.0,
             "yaw": 30.0,
         }
     },
