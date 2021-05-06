@@ -396,6 +396,7 @@ class CARLADataset(Dataset):
           # Build future trajectory.
           player_future = list()
           player_future_control = list()
+          player_future_speed = list()
           for j in range(1, future_length + 1):
             future_location = episode.read_sample(
                 sample_token=sequence[i + j],
@@ -403,11 +404,17 @@ class CARLADataset(Dataset):
             future_control = episode.read_sample(
                 sample_token=sequence[i + j],
                 attr="control")
+            future_speed = episode.read_sample(
+                sample_token=sequence[i + j],
+                attr="velocity")
             player_future.append(future_location)
             player_future_control.append(future_control)
+            player_future_speed.append(future_speed)
           player_future = np.asarray(player_future)
           # No need to transform control actions to local frame
           player_future_control = np.asarray(player_future_control)
+          # No need to transform speed since all in ego-frame
+          player_future_speed = np.asarray(player_future_speed)
           assert len(player_future.shape) == 2
           player_future = cutil.world2local(
               current_location=current_location,
@@ -437,6 +444,7 @@ class CARLADataset(Dataset):
               player_future=player_future,
               player_past=player_past,
               player_future_control = player_future_control,
+              player_future_speed = player_future_speed,
               waypoints_ohe = wpts_ohe,
               mode = mode
           )
