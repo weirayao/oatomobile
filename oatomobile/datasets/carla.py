@@ -397,6 +397,7 @@ class CARLADataset(Dataset):
           player_future = list()
           player_future_control = list()
           player_future_speed = list()
+          player_future_rotation = list()
           for j in range(1, future_length + 1):
             future_location = episode.read_sample(
                 sample_token=sequence[i + j],
@@ -407,9 +408,30 @@ class CARLADataset(Dataset):
             future_speed = episode.read_sample(
                 sample_token=sequence[i + j],
                 attr="velocity")
+            future_rotation = episode.read_sample(
+                sample_token=sequence[i + j],
+                attr="rotation")
             player_future.append(future_location)
             player_future_control.append(future_control)
             player_future_speed.append(future_speed)
+            # Relative to current rotation
+            relative_rotation = future_rotation - current_rotation
+            relative_yaw = relative_rotation[1]
+            if relative_yaw < 0:
+              relative_yaw += 360
+            if relative_yaw > 360:
+              relative_yaw -= 360
+            # Cast to [-pi, pi]
+            if relative_yaw > 180:
+              relative_yaw = relative_yaw - 360
+            relative_rotation[1] = relative_yaw
+            player_future_rotation.append(relative_rotation)
+          player_future = np.asarray(player_future)
+          # No need to transform control actions to local frame
+          player_future_control = np.asarray(player_future_control)
+          # No need to transform speed since all in ego-frame
+          player_future_speed = np.asarray(player_future_speed)
+          player_future_rotation = np.asarray(player_future_rotation)
           player_future = np.asarray(player_future)
           # No need to transform control actions to local frame
           player_future_control = np.asarray(player_future_control)
@@ -445,6 +467,7 @@ class CARLADataset(Dataset):
               player_past=player_past,
               player_future_control = player_future_control,
               player_future_speed = player_future_speed,
+              player_future_rotation = player_future_rotation,
               waypoints_ohe = wpts_ohe,
               mode = mode
           )
