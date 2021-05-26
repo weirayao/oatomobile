@@ -85,7 +85,7 @@ def setup(
     # Start CARLA server.
     env = os.environ.copy()
     env["SDL_VIDEODRIVER"] = "offscreen"
-    env["SDL_HINT_CUDA_DEVICE"] = "0"
+    env["SDL_HINT_CUDA_DEVICE"] = "1"
     logging.debug("Inits a CARLA server at port={}".format(port))
     server = subprocess.Popen(
         [
