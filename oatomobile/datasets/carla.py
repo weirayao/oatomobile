@@ -46,7 +46,7 @@ import time
 
 
 def map_waypoints_to_grid(waypoints, grid_res = 0.5, grid_size = (40,40)):
-    # x: forward y: left side z: upward
+    # x: forward y: right side z: upward
     waypoints = waypoints[:,[1,0]]
     f = interpolate.interp1d(waypoints[:,0], waypoints[:,1], "linear")
     f_inv = interpolate.interp1d(waypoints[:,1], waypoints[:,0], "linear")
@@ -215,7 +215,8 @@ class CARLADataset(Dataset):
   def collect(self, 
               num_episodes: int, 
               output_dir: str,
-              max_steps_per_episode: int = 1000):
+              max_steps_per_episode: int = 1000,
+              debug: bool = False):
     """Collect multiple episodes of data using configuration file
 
     Args: 
@@ -227,6 +228,8 @@ class CARLADataset(Dataset):
     os.makedirs(output_dir, exist_ok=True)
     town = self.config["TOWN"]
     sensors = defaults.CARLA_SENSORS
+    for weather_id in ["ClearNoon", "WetNoon", "HardRainNoon", "ClearSunset"]:
+      os.makedirs(os.path.join(output_dir, weather_id), exist_ok=True)
     for i in range(num_episodes):
       print("Collecting Episode: %d..."%i)
       number_of_vehicles = random.randint(self.config["NumberOfVehicles"][0], 
@@ -236,22 +239,25 @@ class CARLADataset(Dataset):
 
       weather = random.choice(self.config["WEATHERS"])
       origin, destination = random.choice(self.config["POSITIONS"])
+      if random.random() < 0.5:
+        origin, destination = destination, origin
       print("Number of Vehicles: %d\nNumber of Pedestrians: %d"%(number_of_vehicles, number_of_pedestrians))
       print("Weather: %s"%weather)
-      print("Origin index: %d\nDestination index: %d"%(origin,destination))
+      # print("Origin index: %d\nDestination index: %d"%(origin,destination))
+      data_dir = os.path.join(output_dir, weather)
       CARLADataset.collect_one_episode(town=town, 
                                        weather=weather, 
-                                       output_dir=output_dir,
+                                       output_dir=data_dir,
                                        num_vehicles=number_of_vehicles, 
                                        num_pedestrians=number_of_pedestrians, 
                                        num_steps=max_steps_per_episode, 
-                                       spawn_point=origin, 
+                                       spawn_point=origin,
                                        destination=destination,
                                        sensors=sensors, 
-                                       render=False)
-      # Wait 30s so the game can be closed completely
-      print("Done! Sleeping...")                                 
-      time.sleep(15)
+                                       render=False,
+                                       debug=debug)
+      # Wait 5s so the game can be closed completely
+      time.sleep(5)
 
   @staticmethod
   def collect_one_episode(
@@ -273,6 +279,7 @@ class CARLADataset(Dataset):
           "actors_tracker",
       ),
       render: bool = False,
+      debug: bool = False
   ) -> None:
     """Collects autopilot demonstrations for a single episode on CARLA.
 
@@ -293,10 +300,11 @@ class CARLADataset(Dataset):
       sensors: The list of recorded sensors.
       render: If True it spawn the `PyGame` display.
     """
-    from oatomobile.baselines.rulebased.autopilot.agent import AutopilotAgent
+    from oatomobile.baselines.rulebased.walker.agent import AutopilotAgent
     from oatomobile.core.loop import EnvironmentLoop
     from oatomobile.core.rl import FiniteHorizonWrapper
     from oatomobile.core.rl import SaveToDiskWrapper
+    from oatomobile.core.rl import MonitorWrapper
     from oatomobile.envs.carla import CARLANavEnv
     from oatomobile.envs.carla import TerminateOnCollisionWrapper
 
@@ -309,11 +317,14 @@ class CARLADataset(Dataset):
         sensors=sensors,
         num_vehicles=num_vehicles,
         num_pedestrians=num_pedestrians
-    )
+    ) 
     # Terminates episode if a collision occurs.
     env = TerminateOnCollisionWrapper(env)
     # Wraps the environment in an episode handler to store <observation, action> pairs.
-    env = SaveToDiskWrapper(env=env, output_dir=output_dir)
+    if debug:
+      env = MonitorWrapper(env, output_fname="/home/wyao1/debug.gif")
+    else:
+      env = SaveToDiskWrapper(env=env, output_dir=output_dir)
     # Caps environment's duration.
     env = FiniteHorizonWrapper(env=env, max_episode_steps=num_steps)
 
@@ -361,7 +372,8 @@ class CARLADataset(Dataset):
         continue
 
       # Always keep `past_length+future_length+1` files open.
-      assert len(sequence) >= past_length + future_length + 1
+      if len(sequence) < past_length + future_length + 1:
+        continue
       for i in tqdm.trange(
           past_length,
           len(sequence) - future_length,

@@ -26,6 +26,10 @@ import carla
 import oatomobile
 from oatomobile.simulators.carla import defaults
 from oatomobile.utils import carla as cutil
+# Walker specific
+import numpy as np
+import os.path as osp
+from skimage.io import imread
 
 try:
   from agents.navigation.local_planner import \
@@ -34,11 +38,18 @@ try:
       compute_magnitude_angle  # pylint: disable=import-error
   from agents.tools.misc import \
       is_within_distance_ahead  # pylint: disable=import-error
+  from agents.tools.misc import \
+      compute_yaw_difference  # pylint: disable=import-error
 except ImportError:
   raise ImportError("Missing CARLA installation, "
                     "make sure the environment variable CARLA_ROOT is provided "
                     "and that the PythonAPI is `easy_install`ed")
 
+WORLD_OFFSETS = {
+    'Town01' : (-52.059906005859375, -52.04995942115784),
+    'Town02' : (-57.459808349609375, 55.3907470703125)
+}
+PIXELS_PER_METER = 5
 
 class AutopilotAgent(oatomobile.Agent):
   """An autopilot agent, based on the official implementation of
@@ -47,8 +58,8 @@ class AutopilotAgent(oatomobile.Agent):
   def __init__(self,
                environment: oatomobile.envs.CARLAEnv,
                *,
-               proximity_tlight_threshold: float = 5.0,
-               proximity_vehicle_threshold: float = 10.0,
+               proximity_tlight_threshold: float = 9.5,
+               proximity_vehicle_threshold: float = 9.5,
                noise: float = 0.1) -> None:
     """Constructs an autopilot agent.
 
@@ -66,7 +77,7 @@ class AutopilotAgent(oatomobile.Agent):
     self._vehicle = self._environment.simulator.hero
     self._world = self._vehicle.get_world()
     self._map = self._world.get_map()
-
+    self._road_map = imread(osp.join(osp.dirname(__file__), '%s.png' % self._map.name))
     # Agent hyperparametres.
     self._proximity_tlight_threshold = proximity_tlight_threshold
     self._proximity_vehicle_threshold = proximity_vehicle_threshold
@@ -119,7 +130,7 @@ class AutopilotAgent(oatomobile.Agent):
 
   def _run_step(
       self,
-      debug: bool = True,
+      debug: bool = False,
   ) -> carla.VehicleControl:  # pylint: disable=no-member
     """Executes one step of navigation."""
 
@@ -131,7 +142,7 @@ class AutopilotAgent(oatomobile.Agent):
     actor_list = self._world.get_actors()
     vehicle_list = actor_list.filter("*vehicle*")
     lights_list = actor_list.filter("*traffic_light*")
-
+    walkers_list = actor_list.filter('*walker*')
     # check possible obstacles
     vehicle_state, vehicle = self._is_vehicle_hazard(vehicle_list)
     if vehicle_state:
@@ -145,6 +156,14 @@ class AutopilotAgent(oatomobile.Agent):
     if light_state:
       if debug:
         logging.warning('=== RED LIGHT AHEAD [{}])'.format(traffic_light.id))
+
+      hazard_detected = True
+
+    # check for the state of the walkers
+    walker_state, walker = self._is_walker_hazard(walkers_list)
+    if walker_state:
+      if debug:
+        logging.warning('=== WALKER AHEAD [{}])'.format(walker.id))
 
       hazard_detected = True
 
@@ -182,6 +201,24 @@ class AutopilotAgent(oatomobile.Agent):
     # Mutate the local planner's global plan.
     self._local_planner.set_global_plan(list(zip(waypoints, roadoptions)))
 
+  def _is_walker_hazard(self, walkers_list):
+    ego_vehicle_location = self._vehicle.get_location()
+    ego_vehicle_waypoint = self._map.get_waypoint(ego_vehicle_location)
+
+    for walker in walkers_list:
+      loc = walker.get_location()
+      dist = loc.distance(ego_vehicle_location)
+      degree = 162 / (np.clip(dist, 1.5, 10.5)+0.3)
+      if self._is_point_on_sidewalk(loc):
+        continue
+
+      if is_within_distance_ahead(loc, ego_vehicle_location,
+                                  self._vehicle.get_transform().rotation.yaw,
+                                  self._proximity_vehicle_threshold, degree=degree):
+        return (True, walker)
+
+    return (False, None)
+
   def _is_vehicle_hazard(
       self,
       vehicle_list,
@@ -198,6 +235,7 @@ class AutopilotAgent(oatomobile.Agent):
     """
 
     ego_vehicle_location = self._vehicle.get_location()
+    ego_vehicle_orientation = self._vehicle.get_transform().rotation.yaw
     ego_vehicle_waypoint = self._map.get_waypoint(ego_vehicle_location)
 
     for target_vehicle in vehicle_list:
@@ -213,12 +251,14 @@ class AutopilotAgent(oatomobile.Agent):
         continue
 
       loc = target_vehicle.get_location()
+      ori = target_vehicle.get_transform().rotation.yaw
+
       if is_within_distance_ahead(
           loc,
           ego_vehicle_location,
           self._vehicle.get_transform().rotation.yaw,
           self._proximity_vehicle_threshold,
-      ):
+      ) and compute_yaw_difference(ego_vehicle_orientation, ori) <= 150:
         return (True, target_vehicle)
 
     return (False, None)
@@ -329,3 +369,18 @@ class AutopilotAgent(oatomobile.Agent):
     point_location = area_loc + carla.Location(x=point.x, y=point.y)  # pylint: disable=no-member
 
     return carla.Location(point_location.x, point_location.y, point_location.z)  # pylint: disable=no-member
+
+  def _world_to_pixel(self, location, offset=(0, 0)):
+    world_offset = WORLD_OFFSETS[self._map.name]
+    x = PIXELS_PER_METER * (location.x - world_offset[0])
+    y = PIXELS_PER_METER * (location.y - world_offset[1])
+    return [int(x - offset[0]), int(y - offset[1])]
+    
+  def _is_point_on_sidewalk(self, loc):
+    # Convert to pixel coordinate
+    pixel_x, pixel_y = self._world_to_pixel(loc)
+    pixel_y = np.clip(pixel_y, 0, self._road_map.shape[0]-1)
+    pixel_x = np.clip(pixel_x, 0, self._road_map.shape[1]-1)
+    point = self._road_map[pixel_y, pixel_x, 0]
+
+    return point == 0

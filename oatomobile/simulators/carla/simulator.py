@@ -2021,26 +2021,26 @@ class CARLASimulator(simulator.Simulator):
       # TODO(filangel): clean this up
       width = 0
       if "left_camera_rgb" in self._observations:
-        width = width + 320
-        height = 180
+        width = width + 800
+        height = 800
       if "front_camera_rgb" in self._observations:
-        width = width + 320
-        height = 180
+        width = width + 800
+        height = 800
       if "rear_camera_rgb" in self._observations:
-        width = width + 320
-        height = 180
+        width = width + 800
+        height = 800
       if "right_camera_rgb" in self._observations:
-        width = width + 320
-        height = 180
+        width = width + 800
+        height = 800
       if "lidar" in self._observations:
-        width = width + 200
-        height = 200
+        width = width + 800
+        height = 800
       if "bird_view_camera_rgb" in self._observations:
-        width = width + 200
-        height = 200
+        width = width + 800
+        height = 800
       if "bird_view_camera_cityscapes" in self._observations:
-        width = width + 200
-        height = 200
+        width = width + 800
+        height = 800
       self._display, self._clock, self._font = gutil.setup(
           width=width,
           height=height,

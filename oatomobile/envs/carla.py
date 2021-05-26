@@ -35,7 +35,6 @@ from oatomobile.simulators.carla.simulator import CARLAAction
 from oatomobile.simulators.carla.simulator import CARLASimulator
 from oatomobile.utils import carla as cutil
 
-
 class CARLAEnv(Env):
   """A CARLA simulator-based OpenAI gym-compatible environment."""
 
@@ -185,6 +184,8 @@ class CARLANavEnv(CARLAEnv):
       )
       distance_to_go = np.linalg.norm(current_location - destination_location)
       done = distance_to_go < self._proximity_destination_threshold
+      if done:
+        print("REACH DESTINATION!")
       reward = float(done)
 
     return observation, reward, done, info

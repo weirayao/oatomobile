@@ -319,20 +319,33 @@ GAME_STATE_CONFIG = {
 #     "rear_camera_segmented",
 #     "rear_camera_depth",
 # Default sensors.
+# CARLA_SENSORS = (
+#     "goal",
+#     "front_camera_rgb",
+#     "front_camera_segmented",
+#     "front_camera_depth",    
+#     "left_camera_rgb",
+#     "left_camera_segmented",
+#     "left_camera_depth",
+#     "right_camera_rgb",
+#     "right_camera_segmented",
+#     "right_camera_depth",
+#     "lidar",
+#     "bird_view_camera_cityscapes",
+#     "bird_view_camera_rgb",
+#     "control",
+#     "location",
+#     "rotation",
+#     "velocity",
+#     "collision",
+#     "lane_invasion",
+#     "is_at_traffic_light",
+#     "traffic_light_state",
+# )
 CARLA_SENSORS = (
     "goal",
     "front_camera_rgb",
     "front_camera_segmented",
-    "front_camera_depth",    
-    "left_camera_rgb",
-    "left_camera_segmented",
-    "left_camera_depth",
-    "right_camera_rgb",
-    "right_camera_segmented",
-    "right_camera_depth",
-    "lidar",
-    "bird_view_camera_cityscapes",
-    "bird_view_camera_rgb",
     "control",
     "location",
     "rotation",
@@ -342,7 +355,6 @@ CARLA_SENSORS = (
     "is_at_traffic_light",
     "traffic_light_state",
 )
-
 # The time interval before stopping the search for the carla server.
 CARLA_CLIENT_TIMEOUT = 20.0
 
