@@ -1459,7 +1459,7 @@ class GoalSensor(simulator.Sensor):
     self._hero = hero
 
     # Parses hyperparameters.
-    self._max_goals = 200
+    self._max_goals = 1000
     self._num_goals = self.config["num_goals"]
     self._sampling_radius = self.config["sampling_radius"]
     self._replan_every_steps = self.config["replan_every_steps"]
@@ -1494,7 +1494,7 @@ class GoalSensor(simulator.Sensor):
       current_waypoint = cutil.carla_xyz_to_ndarray(goals_world[-1].transform.location)
       distance_to_go = np.linalg.norm(current_waypoint - destination_location)
       print(current_waypoint, distance_to_go)
-      if distance_to_go <= self._sampling_radius*2:
+      if distance_to_go <= self._sampling_radius:
         break
     # Converts goals to `NumPy` arrays.
     self._goal = np.asarray([
@@ -1503,7 +1503,7 @@ class GoalSensor(simulator.Sensor):
     ])
     print("Number of global waypoints = ", len(self._goal))
     np.save('waypoints.npy', self._goal)
-    
+
   def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
     """Returns the universal unique identifier of the sensor."""
     return "goal"
