@@ -1494,7 +1494,7 @@ class GoalSensor(simulator.Sensor):
       current_waypoint = cutil.carla_xyz_to_ndarray(goals_world[-1].transform.location)
       distance_to_go = np.linalg.norm(current_waypoint - destination_location)
       print(current_waypoint, distance_to_go)
-      if distance_to_go <= self._sampling_radius:
+      if distance_to_go <= self._sampling_radius/2:
         break
     # Converts goals to `NumPy` arrays.
     self._goal = np.asarray([
