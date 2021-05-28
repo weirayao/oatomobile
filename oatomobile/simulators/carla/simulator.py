@@ -1459,7 +1459,7 @@ class GoalSensor(simulator.Sensor):
     self._hero = hero
 
     # Parses hyperparameters.
-    self._max_goals = 200
+    self._max_goals = 1500
     self._num_goals = self.config["num_goals"]
     self._sampling_radius = self.config["sampling_radius"]
     self._replan_every_steps = self.config["replan_every_steps"]
